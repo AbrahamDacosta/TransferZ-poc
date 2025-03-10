@@ -1,0 +1,50 @@
+{
+    "users": {
+        "2250700000000": {
+            "phone": "2250700000000",
+            "balance_fcfa": 50000,
+            "balance_stablecoin": 80.0
+        },
+        "2250800000000": {
+            "phone": "2250800000000",
+            "balance_fcfa": 30000,
+            "balance_stablecoin": 50.0
+        },
+        "2250787785170": {
+            "phone": 2250787785170,
+            "balance_fcfa": 0,
+            "balance_stablecoin": 20.1
+        },
+        "2250797103267": {
+            "phone": 2250797103267,
+            "balance_fcfa": 0,
+            "balance_stablecoin": 19.99
+        }
+    },
+    "transactions": [
+        {
+            "sender": "2250700000000",
+            "receiver": "2250800000000",
+            "amount": 20.0,
+            "status": "pending"
+        },
+        {
+            "sender": "2250800000000",
+            "receiver": "2250700000000",
+            "amount": 10.0,
+            "status": "completed"
+        },
+        {
+            "sender": "2250787785170",
+            "receiver": "2250700000000",
+            "amount": 0.5000000000000002,
+            "status": "completed"
+        },
+        {
+            "sender": "2250797103267",
+            "receiver": "2250787785170",
+            "amount": 20.01,
+            "status": "completed"
+        }
+    ]
+}
