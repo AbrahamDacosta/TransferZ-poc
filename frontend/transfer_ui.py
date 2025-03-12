@@ -1,8 +1,7 @@
 import streamlit as st
 import requests
-import os
 
-API_URL = os.getenv("API_URL", "https://transferz-api.onrender.com") # Assurez-vous que FastAPI tourne sur cette adresse
+API_URL = "http://127.0.0.1:8000"  # Assurez-vous que FastAPI tourne sur cette adresse
 
 st.set_page_config(page_title="Transfer Z", page_icon="💰", layout="wide")
 st.title("💰 Transfer Z - Plateforme de Transfert")
@@ -14,7 +13,7 @@ if choice == "🏠 Accueil":
     st.subheader("Bienvenue sur Transfer Z")
     st.write("🚀 Gérez vos transactions en toute simplicité !")
     st.write("📌 Déposez, convertissez en stablecoins, transférez et retirez vos fonds rapidement.")
-    st.image("https://www.shutterstock.com/image-illustration/golden-bitcoin-digital-currency-on-260nw-1893271597.jpg", use_container_width=True)
+    st.image("https://source.unsplash.com/800x400/?finance,money", use_container_width=True)
 
 elif choice == "🆕 Inscription":
     st.subheader("🆕 Inscription d'un nouvel utilisateur")
@@ -24,7 +23,12 @@ elif choice == "🆕 Inscription":
         if response.status_code == 200:
             st.success(response.json().get("message", "Utilisateur ajouté avec succès!"))
         else:
-            st.error(f"⚠️ Erreur : {response.json().get('detail', 'Impossible d\'ajouter l\'utilisateur')} ")
+            try:
+                data = response.json()
+                st.error(f"⚠️ Erreur : {data.get('detail', 'Impossible d\'ajouter l\'utilisateur')} ")
+            except requests.exceptions.JSONDecodeError:
+                st.write("🔍 API Response:", response.status_code, response.text)
+                st.error(f"❌ Erreur: La réponse de l'API est invalide : {response.text}")
 
 elif choice == "💰 Dépôt":
     st.subheader("💰 Effectuer un dépôt")
@@ -36,7 +40,12 @@ elif choice == "💰 Dépôt":
         if response.status_code == 200:
             st.success(response.json().get("message", "Dépôt réussi !"))
         else:
-            st.error(f"⚠️ Erreur : {response.json().get('detail', 'Problème lors du dépôt')} ")
+            try:
+                data = response.json()
+                st.error(f"⚠️ Erreur : {data.get('detail', 'Impossible d\'ajouter l\'utilisateur')} ")
+            except requests.exceptions.JSONDecodeError:
+                st.write("🔍 API Response:", response.status_code, response.text)
+                st.error(f"❌ Erreur: La réponse de l'API est invalide : {response.text}")
 
 elif choice == "🔄 Conversion":
     st.subheader("🔄 Convertir FCFA en stablecoin")
@@ -47,7 +56,12 @@ elif choice == "🔄 Conversion":
         if response.status_code == 200:
             st.success(response.json().get("message", "Conversion réussie !"))
         else:
-            st.error(f"⚠️ Erreur : {response.json().get('detail', 'Problème de conversion')} ")
+            try:
+                data = response.json()
+                st.error(f"⚠️ Erreur : {data.get('detail', 'Impossible d\'ajouter l\'utilisateur')} ")
+            except requests.exceptions.JSONDecodeError:
+                st.write("🔍 API Response:", response.status_code, response.text)
+                st.error(f"❌ Erreur: La réponse de l'API est invalide : {response.text}")
 
 elif choice == "🔗 Transfert P2P":
     st.subheader("🔗 Transfert de stablecoin entre utilisateurs")
@@ -60,7 +74,12 @@ elif choice == "🔗 Transfert P2P":
         if response.status_code == 200:
             st.success(response.json().get("message", "Transfert en attente de validation"))
         else:
-            st.error(f"⚠️ Erreur : {response.json().get('detail', 'Échec du transfert')} ")
+            try:
+                data = response.json()
+                st.error(f"⚠️ Erreur : {data.get('detail', 'Impossible d\'ajouter l\'utilisateur')} ")
+            except requests.exceptions.JSONDecodeError:
+                st.write("🔍 API Response:", response.status_code, response.text)
+                st.error(f"❌ Erreur: La réponse de l'API est invalide : {response.text}")
 
 elif choice == "💸 Retrait":
     st.subheader("💸 Effectuer un retrait")
@@ -72,7 +91,12 @@ elif choice == "💸 Retrait":
         if response.status_code == 200:
             st.success(response.json().get("message", "Retrait enregistré, traitement en cours."))
         else:
-            st.error(f"⚠️ Erreur : {response.json().get('detail', 'Échec du retrait')} ")
+            try:
+                data = response.json()
+                st.error(f"⚠️ Erreur : {data.get('detail', 'Impossible d\'ajouter l\'utilisateur')} ")
+            except requests.exceptions.JSONDecodeError:
+                st.write("🔍 API Response:", response.status_code, response.text)
+                st.error(f"❌ Erreur: La réponse de l'API est invalide : {response.text}")
 
 elif choice == "✅ Validation des Transactions":
     st.subheader("✅ Validation des Transactions en Attente")
