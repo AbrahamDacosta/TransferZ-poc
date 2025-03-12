@@ -15,18 +15,23 @@ app.add_middleware(
 )
 
 # Database file
-DB_FILE = "database.json"
+import os
+
+DB_FILE = "/tmp/database.json"
 
 def load_db():
+    if not os.path.exists(DB_FILE):
+        return {"users": {}, "transactions": []}
     try:
         with open(DB_FILE, "r") as f:
             return json.load(f)
-    except FileNotFoundError:
-        return {"users": {}, "transactions": []}
+    except json.JSONDecodeError:
+        return {"users": {}, "transactions": []}  # Retourne une base vide si le fichier est corrompu
 
 def save_db(data):
     with open(DB_FILE, "w") as f:
         json.dump(data, f, indent=4)
+
 
 # User Model
 class User(BaseModel):
