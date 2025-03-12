@@ -1,7 +1,7 @@
 import streamlit as st
 import requests
 
-API_URL = "http://127.0.0.1:8000"  # Assurez-vous que FastAPI tourne sur cette adresse
+API_URL = "https://transferz-poc.onrender.com"  # Assurez-vous que FastAPI tourne sur cette adresse
 
 st.set_page_config(page_title="Transfer Z", page_icon="💰", layout="wide")
 st.title("💰 Transfer Z - Plateforme de Transfert")
