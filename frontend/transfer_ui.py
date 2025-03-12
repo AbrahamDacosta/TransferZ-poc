@@ -1,5 +1,6 @@
 import streamlit as st
 import requests
+import os
 
 API_URL = os.getenv("API_URL", "https://transferz-api.onrender.com") # Assurez-vous que FastAPI tourne sur cette adresse
 
