@@ -13,7 +13,7 @@ if choice == "🏠 Accueil":
     st.subheader("Bienvenue sur Transfer Z")
     st.write("🚀 Gérez vos transactions en toute simplicité !")
     st.write("📌 Déposez, convertissez en stablecoins, transférez et retirez vos fonds rapidement.")
-    st.image("https://source.unsplash.com/800x400/?finance,money", use_container_width=True)
+    st.image("https://media.licdn.com/dms/image/v2/D4D12AQF0_h7fP-LHaQ/article-cover_image-shrink_720_1280/article-cover_image-shrink_720_1280/0/1707473395411?e=1747267200&v=beta&t=aKWf-ZEzTjGLDUF0yK-o_ZVgkU2ydhmLBKb12ykMuik", use_container_width=True)
 
 elif choice == "🆕 Inscription":
     st.subheader("🆕 Inscription d'un nouvel utilisateur")
