@@ -4,7 +4,6 @@ import jwt
 import datetime
 import requests
 import streamlit as st
-from fastapi import FastAPI, HTTPException, Depends
 from fastapi.security import OAuth2PasswordBearer
 from passlib.context import CryptContext
 from fastapi.middleware.cors import CORSMiddleware
