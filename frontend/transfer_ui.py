@@ -4,12 +4,9 @@ import jwt
 import datetime
 import requests
 import streamlit as st
-from fastapi.security import OAuth2PasswordBearer
-from passlib.context import CryptContext
-from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 
-API_URL = "https://transferz-poc.onrender.com"
+API_URL = "https://transferz-api.onrender.com"
 
 # Personnalisation de l'accueil
 st.markdown(
@@ -99,6 +96,7 @@ if st.session_state["access_token"]:
                 st.success("✅ Conversion réussie !")
             else:
                 st.error("❌ Erreur lors de la conversion")
+
     
     elif option == "Transfert P2P":
         st.subheader("🔄 Transfert P2P")
