@@ -53,7 +53,11 @@ with tab2:
         if response.status_code == 200:
             st.success("✅ Inscription réussie ! Vous pouvez maintenant vous connecter.")
         else:
-            st.error("❌ Erreur lors de l'inscription : " + response.json().get("detail", "Problème inconnu"))
+            try:
+                error_detail = response.json().get("detail", "Problème inconnu")
+            except requests.exceptions.JSONDecodeError:
+                error_detail = response.text  # Si la réponse n'est pas du JSON
+            st.error(f"❌ Erreur lors de l'inscription : {error_detail}")
 
 with tab1:
     st.subheader("🔐 Connexion")
@@ -66,7 +70,12 @@ with tab1:
             st.session_state["access_token"] = data["access_token"]
             st.success("✅ Connexion réussie !")
         else:
-            st.error("❌ Identifiants incorrects")
+            try:
+                error_detail = response.json().get("detail", "Identifiants incorrects")
+            except requests.exceptions.JSONDecodeError:
+                error_detail = response.text
+            st.error(f"❌ Erreur lors de la connexion : {error_detail}")
+
 
 # Si l'utilisateur est connecté, afficher les fonctionnalités
 if st.session_state["access_token"]:
