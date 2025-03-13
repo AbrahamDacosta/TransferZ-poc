@@ -1,112 +1,145 @@
-import streamlit as st
+import os
+import json
+import jwt
+import datetime
 import requests
+import streamlit as st
+from fastapi import FastAPI, HTTPException, Depends
+from fastapi.security import OAuth2PasswordBearer
+from passlib.context import CryptContext
+from fastapi.middleware.cors import CORSMiddleware
+from pydantic import BaseModel
 
-API_URL = "https://transferz-poc.onrender.com"  # Assurez-vous que FastAPI tourne sur cette adresse
+API_URL = "https://transferz-api.onrender.com"
 
-st.set_page_config(page_title="Transfer Z", page_icon="💰", layout="wide")
-st.title("💰 Transfer Z - Plateforme de Transfert")
+# Personnalisation de l'accueil
+st.markdown(
+    """
+    <style>
+        .main-title {
+            font-size: 36px;
+            font-weight: bold;
+            color: #4CAF50;
+            text-align: center;
+        }
+        .sub-title {
+            font-size: 20px;
+            color: #333;
+            text-align: center;
+        }
+        .login-container {
+            background-color: #f9f9f9;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+        }
+    </style>
+    """,
+    unsafe_allow_html=True
+)
 
-menu = ["🏠 Accueil", "🆕 Inscription", "💰 Dépôt", "🔄 Conversion", "🔗 Transfert P2P", "💸 Retrait", "✅ Validation des Transactions"]
-choice = st.sidebar.selectbox("Navigation", menu)
+st.markdown("<div class='main-title'>🚀 TransferZ - La Solution de Paiement Innovante</div>", unsafe_allow_html=True)
+st.markdown("<div class='sub-title'>Simplifiez vos transactions avec notre plateforme sécurisée</div>", unsafe_allow_html=True)
+st.markdown("<br>", unsafe_allow_html=True)
 
-if choice == "🏠 Accueil":
-    st.subheader("Bienvenue sur Transfer Z")
-    st.write("🚀 Gérez vos transactions en toute simplicité !")
-    st.write("📌 Déposez, convertissez en stablecoins, transférez et retirez vos fonds rapidement.")
-    st.image("https://media.licdn.com/dms/image/v2/D4D12AQF0_h7fP-LHaQ/article-cover_image-shrink_720_1280/article-cover_image-shrink_720_1280/0/1707473395411?e=1747267200&v=beta&t=aKWf-ZEzTjGLDUF0yK-o_ZVgkU2ydhmLBKb12ykMuik", use_container_width=True)
+# Gestion des sessions utilisateur
+if "access_token" not in st.session_state:
+    st.session_state["access_token"] = None
 
-elif choice == "🆕 Inscription":
-    st.subheader("🆕 Inscription d'un nouvel utilisateur")
-    phone = st.text_input("📞 Numéro de téléphone")
-    if st.button("✅ S'inscrire"):
-        response = requests.post(f"{API_URL}/add_user/", json={"phone": phone})
+# Formulaire de connexion
+st.markdown("<div class='login-container'>", unsafe_allow_html=True)
+st.subheader("🔐 Connexion")
+username = st.text_input("Nom d'utilisateur")
+password = st.text_input("Mot de passe", type="password")
+if st.button("Se connecter"):
+    response = requests.post(f"{API_URL}/login/", json={"username": username, "password": password})
+    if response.status_code == 200:
+        data = response.json()
+        st.session_state["access_token"] = data["access_token"]
+        st.success("✅ Connexion réussie !")
+    else:
+        st.error("❌ Identifiants incorrects")
+st.markdown("</div>", unsafe_allow_html=True)
+
+# Si l'utilisateur est connecté, afficher les fonctionnalités
+if st.session_state["access_token"]:
+    st.markdown("<hr>", unsafe_allow_html=True)
+    st.sidebar.title("📌 Menu")
+    option = st.sidebar.radio("Navigation", ["Ajouter un utilisateur", "Dépôt Mobile Money", "Conversion en Stablecoin", "Transfert P2P", "Retrait", "Historique des Transactions", "Vérification du Solde"])
+    
+    if option == "Ajouter un utilisateur":
+        st.subheader("👤 Ajouter un utilisateur")
+        new_username = st.text_input("Nom du nouvel utilisateur")
+        new_password = st.text_input("Mot de passe du nouvel utilisateur", type="password")
+        if st.button("Créer l'utilisateur"):
+            headers = {"Authorization": f"Bearer {st.session_state['access_token']}"}
+            response = requests.post(f"{API_URL}/register/", headers=headers, json={"username": new_username, "password": new_password})
+            if response.status_code == 200:
+                st.success("✅ Utilisateur ajouté avec succès !")
+            else:
+                st.error("❌ Erreur lors de l'ajout de l'utilisateur")
+    
+    elif option == "Dépôt Mobile Money":
+        st.subheader("📲 Dépôt d'argent via Mobile Money")
+        amount_mobile = st.number_input("Montant à déposer", min_value=1.0)
+        if st.button("Déposer via Mobile Money"):
+            headers = {"Authorization": f"Bearer {st.session_state['access_token']}"}
+            response = requests.post(f"{API_URL}/deposit_mobile_money/", headers=headers, json={"amount": amount_mobile})
+            if response.status_code == 200:
+                st.success("✅ Dépôt Mobile Money réussi !")
+            else:
+                st.error("❌ Erreur lors du dépôt Mobile Money")
+    
+    elif option == "Conversion en Stablecoin":
+        st.subheader("💱 Conversion en Stablecoin")
+        convert_amount = st.number_input("Montant à convertir", min_value=1.0)
+        if st.button("Convertir en Stablecoin"):
+            headers = {"Authorization": f"Bearer {st.session_state['access_token']}"}
+            response = requests.post(f"{API_URL}/convert_stablecoin/", headers=headers, json={"amount": convert_amount})
+            if response.status_code == 200:
+                st.success("✅ Conversion réussie !")
+            else:
+                st.error("❌ Erreur lors de la conversion")
+    
+    elif option == "Transfert P2P":
+        st.subheader("🔄 Transfert P2P")
+        receiver = st.text_input("Nom du destinataire")
+        amount_transfer = st.number_input("Montant à transférer", min_value=1.0)
+        if st.button("Transférer"):
+            headers = {"Authorization": f"Bearer {st.session_state['access_token']}"}
+            response = requests.post(f"{API_URL}/transfer/", headers=headers, json={"receiver": receiver, "amount": amount_transfer})
+            if response.status_code == 200:
+                st.success("✅ Transfert réussi !")
+            else:
+                st.error("❌ Erreur lors du transfert")
+    
+    elif option == "Retrait":
+        st.subheader("💸 Retrait en monnaie électronique")
+        withdraw_amount = st.number_input("Montant à retirer", min_value=1.0)
+        if st.button("Retirer en monnaie électronique"):
+            headers = {"Authorization": f"Bearer {st.session_state['access_token']}"}
+            response = requests.post(f"{API_URL}/withdraw/", headers=headers, json={"amount": withdraw_amount})
+            if response.status_code == 200:
+                st.success("✅ Retrait réussi !")
+            else:
+                st.error("❌ Erreur lors du retrait")
+    
+    elif option == "Historique des Transactions":
+        st.subheader("📋 Historique des Transactions")
+        headers = {"Authorization": f"Bearer {st.session_state['access_token']}"}
+        response = requests.get(f"{API_URL}/transactions/", headers=headers)
         if response.status_code == 200:
-            st.success(response.json().get("message", "Utilisateur ajouté avec succès!"))
+            transactions = response.json()
+            st.write(transactions)
         else:
-            try:
-                data = response.json()
-                st.error(f"⚠️ Erreur : {data.get('detail', 'Impossible d\'ajouter l\'utilisateur')} ")
-            except requests.exceptions.JSONDecodeError:
-                st.write("🔍 API Response:", response.status_code, response.text)
-                st.error(f"❌ Erreur: La réponse de l'API est invalide : {response.text}")
-
-elif choice == "💰 Dépôt":
-    st.subheader("💰 Effectuer un dépôt")
-    st.write("Déposez de l'argent sur votre compte pour pouvoir l'utiliser sur Transfer Z.")
-    phone = st.text_input("📞 Numéro de téléphone")
-    amount = st.number_input("💵 Montant en FCFA", min_value=1.0, step=100.0)
-    if st.button("💰 Déposer"):
-        response = requests.post(f"{API_URL}/deposit/", params={"phone": phone, "amount": amount})
+            st.error("❌ Erreur lors de la récupération de l'historique")
+    
+    elif option == "Vérification du Solde":
+        st.subheader("💳 Solde Disponible")
+        headers = {"Authorization": f"Bearer {st.session_state['access_token']}"}
+        response = requests.get(f"{API_URL}/balance/", headers=headers)
         if response.status_code == 200:
-            st.success(response.json().get("message", "Dépôt réussi !"))
+            balance = response.json()
+            st.write(f"💰 Solde FCFA : {balance['balance_fcfa']} \n💱 Solde Stablecoin : {balance['balance_stablecoin']}")
         else:
-            try:
-                data = response.json()
-                st.error(f"⚠️ Erreur : {data.get('detail', 'Impossible d\'ajouter l\'utilisateur')} ")
-            except requests.exceptions.JSONDecodeError:
-                st.write("🔍 API Response:", response.status_code, response.text)
-                st.error(f"❌ Erreur: La réponse de l'API est invalide : {response.text}")
-
-elif choice == "🔄 Conversion":
-    st.subheader("🔄 Convertir FCFA en stablecoin")
-    st.write("Transformez votre solde en monnaie locale en stablecoins pour des transactions sécurisées.")
-    phone = st.text_input("📞 Numéro de téléphone")
-    if st.button("🔄 Convertir"):
-        response = requests.post(f"{API_URL}/convert/", params={"phone": phone})
-        if response.status_code == 200:
-            st.success(response.json().get("message", "Conversion réussie !"))
-        else:
-            try:
-                data = response.json()
-                st.error(f"⚠️ Erreur : {data.get('detail', 'Impossible d\'ajouter l\'utilisateur')} ")
-            except requests.exceptions.JSONDecodeError:
-                st.write("🔍 API Response:", response.status_code, response.text)
-                st.error(f"❌ Erreur: La réponse de l'API est invalide : {response.text}")
-
-elif choice == "🔗 Transfert P2P":
-    st.subheader("🔗 Transfert de stablecoin entre utilisateurs")
-    st.write("Envoyez des stablecoins instantanément à un autre utilisateur Transfer Z.")
-    sender = st.text_input("📞 Numéro de l'expéditeur")
-    receiver = st.text_input("📞 Numéro du destinataire")
-    amount = st.number_input("💰 Montant en stablecoin", min_value=0.01, step=0.01)
-    if st.button("📤 Envoyer"):
-        response = requests.post(f"{API_URL}/transfer/", json={"sender": sender, "receiver": receiver, "amount": amount})
-        if response.status_code == 200:
-            st.success(response.json().get("message", "Transfert en attente de validation"))
-        else:
-            try:
-                data = response.json()
-                st.error(f"⚠️ Erreur : {data.get('detail', 'Impossible d\'ajouter l\'utilisateur')} ")
-            except requests.exceptions.JSONDecodeError:
-                st.write("🔍 API Response:", response.status_code, response.text)
-                st.error(f"❌ Erreur: La réponse de l'API est invalide : {response.text}")
-
-elif choice == "💸 Retrait":
-    st.subheader("💸 Effectuer un retrait")
-    st.write("Convertissez vos stablecoins en monnaie électronique pour les retirer sur Mobile Money.")
-    phone = st.text_input("📞 Numéro de téléphone")
-    amount = st.number_input("💵 Montant en stablecoin", min_value=0.01, step=0.01)
-    if st.button("💸 Retirer"):
-        response = requests.post(f"{API_URL}/withdraw/", params={"phone": phone, "amount": amount})
-        if response.status_code == 200:
-            st.success(response.json().get("message", "Retrait enregistré, traitement en cours."))
-        else:
-            try:
-                data = response.json()
-                st.error(f"⚠️ Erreur : {data.get('detail', 'Impossible d\'ajouter l\'utilisateur')} ")
-            except requests.exceptions.JSONDecodeError:
-                st.write("🔍 API Response:", response.status_code, response.text)
-                st.error(f"❌ Erreur: La réponse de l'API est invalide : {response.text}")
-
-elif choice == "✅ Validation des Transactions":
-    st.subheader("✅ Validation des Transactions en Attente")
-    st.write("📌 Liste des transactions en attente de validation.")
-    response = requests.get(f"{API_URL}/transactions/")
-    transactions = response.json()
-    for i, transaction in enumerate(transactions):
-        with st.expander(f"🔄 Transaction {i+1}: {transaction['sender']} → {transaction['receiver']} ({transaction['amount']} USDT)"):
-            st.write(f"Statut: {transaction['status']}")
-            if transaction["status"] == "pending":
-                if st.button(f"✅ Valider Transaction {i+1}"):
-                    validate_response = requests.post(f"{API_URL}/validate_transaction/", params={"index": i})
-                    st.success(validate_response.json().get("message", "Transaction validée."))
+            st.error("❌ Erreur lors de la récupération du solde")
