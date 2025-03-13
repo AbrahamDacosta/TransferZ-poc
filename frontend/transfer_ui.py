@@ -4,7 +4,6 @@ import jwt
 import datetime
 import requests
 import streamlit as st
-from pydantic import BaseModel
 
 API_URL = "https://transferz-api.onrender.com"
 
@@ -42,40 +41,40 @@ st.markdown("<br>", unsafe_allow_html=True)
 if "access_token" not in st.session_state:
     st.session_state["access_token"] = None
 
-# Formulaire de connexion
-st.markdown("<div class='login-container'>", unsafe_allow_html=True)
-st.subheader("🔐 Connexion")
-username = st.text_input("Nom d'utilisateur")
-password = st.text_input("Mot de passe", type="password")
-if st.button("Se connecter"):
-    response = requests.post(f"{API_URL}/login/", json={"username": username, "password": password})
-    if response.status_code == 200:
-        data = response.json()
-        st.session_state["access_token"] = data["access_token"]
-        st.success("✅ Connexion réussie !")
-    else:
-        st.error("❌ Identifiants incorrects")
-st.markdown("</div>", unsafe_allow_html=True)
+# Onglets pour Inscription / Connexion
+tab1, tab2 = st.tabs(["🔐 Connexion", "📝 Inscription"])
+
+with tab2:
+    st.subheader("📝 Inscription")
+    new_username = st.text_input("Nom d'utilisateur")
+    new_password = st.text_input("Mot de passe", type="password")
+    if st.button("Créer un compte"):
+        response = requests.post(f"{API_URL}/register/", json={"username": new_username, "password": new_password})
+        if response.status_code == 200:
+            st.success("✅ Inscription réussie ! Vous pouvez maintenant vous connecter.")
+        else:
+            st.error("❌ Erreur lors de l'inscription : " + response.json().get("detail", "Problème inconnu"))
+
+with tab1:
+    st.subheader("🔐 Connexion")
+    username = st.text_input("Nom d'utilisateur", key="login_username")
+    password = st.text_input("Mot de passe", type="password", key="login_password")
+    if st.button("Se connecter"):
+        response = requests.post(f"{API_URL}/login/", json={"username": username, "password": password})
+        if response.status_code == 200:
+            data = response.json()
+            st.session_state["access_token"] = data["access_token"]
+            st.success("✅ Connexion réussie !")
+        else:
+            st.error("❌ Identifiants incorrects")
 
 # Si l'utilisateur est connecté, afficher les fonctionnalités
 if st.session_state["access_token"]:
     st.markdown("<hr>", unsafe_allow_html=True)
     st.sidebar.title("📌 Menu")
-    option = st.sidebar.radio("Navigation", ["Ajouter un utilisateur", "Dépôt Mobile Money", "Conversion en Stablecoin", "Transfert P2P", "Retrait", "Historique des Transactions", "Vérification du Solde"])
+    option = st.sidebar.radio("Navigation", ["Dépôt Mobile Money", "Conversion en Stablecoin", "Transfert P2P", "Retrait", "Historique des Transactions", "Vérification du Solde"])
     
-    if option == "Ajouter un utilisateur":
-        st.subheader("👤 Ajouter un utilisateur")
-        new_username = st.text_input("Nom du nouvel utilisateur")
-        new_password = st.text_input("Mot de passe du nouvel utilisateur", type="password")
-        if st.button("Créer l'utilisateur"):
-            headers = {"Authorization": f"Bearer {st.session_state['access_token']}"}
-            response = requests.post(f"{API_URL}/register/", headers=headers, json={"username": new_username, "password": new_password})
-            if response.status_code == 200:
-                st.success("✅ Utilisateur ajouté avec succès !")
-            else:
-                st.error("❌ Erreur lors de l'ajout de l'utilisateur")
-    
-    elif option == "Dépôt Mobile Money":
+    if option == "Dépôt Mobile Money":
         st.subheader("📲 Dépôt d'argent via Mobile Money")
         amount_mobile = st.number_input("Montant à déposer", min_value=1.0)
         if st.button("Déposer via Mobile Money"):
@@ -96,6 +95,7 @@ if st.session_state["access_token"]:
                 st.success("✅ Conversion réussie !")
             else:
                 st.error("❌ Erreur lors de la conversion")
+
 
     
     elif option == "Transfert P2P":
