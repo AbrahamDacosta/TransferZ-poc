@@ -2,7 +2,7 @@ import os
 import json
 import jwt
 import datetime
-from fastapi import FastAPI, HTTPException, Depends
+from fastapi import FastAPI, HTTPException, Depends,status
 from fastapi.security import OAuth2PasswordBearer
 from passlib.context import CryptContext
 from fastapi.middleware.cors import CORSMiddleware
@@ -28,6 +28,17 @@ ACCESS_TOKEN_EXPIRE_MINUTES = 30
 # Gestion des mots de passe
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/login")
+
+def get_current_user(token: str = Security(oauth2_scheme)):
+    try:
+        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+        username: str = payload.get("sub")
+        if username is None:
+            raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid authentication token")
+        return username
+    except jwt.PyJWTError:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid authentication token")
+
 
 def load_db():
     if not os.path.exists(DB_FILE):
