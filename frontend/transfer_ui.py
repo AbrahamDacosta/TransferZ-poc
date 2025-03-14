@@ -103,7 +103,7 @@ if st.session_state["access_token"]:
         convert_amount = st.number_input("Montant à convertir", min_value=1.0)
         if st.button("Convertir en Stablecoin"):
             headers = {"Authorization": f"Bearer {st.session_state['access_token']}"}
-            response = requests.post(f"{API_URL}/convert_stablecoin/", headers=headers, json={"amount": convert_amount})
+            response = requests.post(f"{API_URL}/convert/", headers=headers, json={"amount": convert_amount})
             if response.status_code == 200:
                 st.success("✅ Conversion réussie !")
             else:
