@@ -90,6 +90,8 @@ class UserLogin(BaseModel):
     username: str
     password: str
 
+
+
 @app.post("/login/")
 def login(user: UserLogin):
     auth_user = authenticate_user(user.username, user.password)
@@ -98,6 +100,7 @@ def login(user: UserLogin):
     access_token = create_access_token({"sub": user.username})
     return {"access_token": access_token, "token_type": "bearer"}
 
+# Endpoint pour effectuer un dépôt
 @app.post("/deposit/")
 def deposit(username: str = Depends(auth_required), amount: float = 0):
     db = load_db()
@@ -107,6 +110,24 @@ def deposit(username: str = Depends(auth_required), amount: float = 0):
     save_db(db)
     return {"message": "Deposit successful", "new_balance": db["users"][username]["balance_fcfa"]}
 
+
+# Endpoint pour convertir en stablecoin
+@app.post("/convert/")
+def convert(phone: str):
+    db = load_db()
+    if phone not in db["users"]:
+        raise HTTPException(status_code=404, detail="Utilisateur non trouvé")
+    rate = 0.0016  # Exemple de taux de conversion FCFA -> USDT
+    amount_fcfa = db["users"][phone]["balance_fcfa"]
+    if amount_fcfa <= 0:
+        raise HTTPException(status_code=400, detail="Solde insuffisant")
+    db["users"][phone]["balance_stablecoin"] += amount_fcfa * rate
+    db["users"][phone]["balance_fcfa"] = 0
+    save_db(db)
+    return {"message": "Conversion réussie", "new_balance": db["users"][phone]["balance_stablecoin"]}
+
+
+# Endpoint pour transfert P2P
 @app.post("/transfer/")
 def transfer(sender: str = Depends(auth_required), receiver: str = "", amount: float = 0):
     db = load_db()
