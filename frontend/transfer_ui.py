@@ -92,7 +92,11 @@ if st.session_state["access_token"]:
             if response.status_code == 200:
                 st.success("✅ Dépôt Mobile Money réussi !")
             else:
-                st.error("❌ Erreur lors du dépôt Mobile Money")
+                try:
+                    error_detail = response.json().get("detail", "Problème inconnu")
+                except requests.exceptions.JSONDecodeError:
+                    error_detail = response.text
+                st.error(f"❌ Erreur lors du dépôt Mobile Money : {error_detail}")
     
     elif option == "Conversion en Stablecoin":
         st.subheader("💱 Conversion en Stablecoin")
