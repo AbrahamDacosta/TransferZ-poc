@@ -88,7 +88,7 @@ if st.session_state["access_token"]:
         amount_mobile = st.number_input("Montant à déposer", min_value=1.0)
         if st.button("Déposer via Mobile Money"):
             headers = {"Authorization": f"Bearer {st.session_state['access_token']}"}
-            response = requests.post(f"{API_URL}/deposit_mobile_money/", headers=headers, json={"amount": amount_mobile})
+            response = requests.post(f"{API_URL}/deposit/", headers=headers, json={"amount": amount_mobile})
             if response.status_code == 200:
                 st.success("✅ Dépôt Mobile Money réussi !")
             else:
