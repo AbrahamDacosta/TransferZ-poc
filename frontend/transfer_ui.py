@@ -104,10 +104,15 @@ if st.session_state["access_token"]:
         if st.button("Convertir en Stablecoin"):
             headers = {"Authorization": f"Bearer {st.session_state['access_token']}"}
             response = requests.post(f"{API_URL}/convert_stablecoin/", headers=headers, json={"amount": convert_amount})
-            if response.status_code == 200:
-                st.success("✅ Conversion réussie !")
-            else:
-                st.error("❌ Erreur lors de la conversion")
+        if response.status_code == 200:
+            st.success("✅ Conversion réussie !")
+        else:
+            try:
+                error_detail = response.json().get("detail", "Problème inconnu")
+            except requests.exceptions.JSONDecodeError:
+                error_detail = response.text
+            st.error(f"❌ Erreur lors de la conversion : {error_detail}")
+
 
 
     
