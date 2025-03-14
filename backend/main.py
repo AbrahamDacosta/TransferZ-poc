@@ -2,7 +2,7 @@ import os
 import json
 import jwt
 import datetime
-from fastapi import FastAPI, HTTPException, Depends,status
+from fastapi import FastAPI, HTTPException, Depends,status,Security
 from fastapi.security import OAuth2PasswordBearer
 from passlib.context import CryptContext
 from fastapi.middleware.cors import CORSMiddleware
