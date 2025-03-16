@@ -98,21 +98,24 @@ if st.session_state["access_token"]:
                     error_detail = response.text
                 st.error(f"❌ Erreur lors du dépôt Mobile Money : {error_detail}")
     
-    elif option == "🔄 Conversion":
-        st.subheader("🔄 Convertir FCFA en stablecoin")
-        st.write("Transformez votre solde en monnaie locale en stablecoins pour des transactions sécurisées.")
-        phone = st.text_input("📞 Numéro de téléphone")
-        if st.button("🔄 Convertir"):
-            response = requests.post(f"{API_URL}/convert/", params={"phone": phone})
-            if response.status_code == 200:
-                st.success(response.json().get("message", "Conversion réussie !"))
-            else:
-                try:
-                    data = response.json()
-                    st.error(f"⚠️ Erreur : {data.get('detail', 'Impossible d\'ajouter l\'utilisateur')} ")
-                except requests.exceptions.JSONDecodeError:
-                    st.write("🔍 API Response:", response.status_code, response.text)
-                    st.error(f"❌ Erreur: La réponse de l'API est invalide : {response.text}")
+    elif option == "Conversion en Stablecoin":
+        st.subheader("💱 Conversion en Stablecoin")
+        convert_amount = st.number_input("Montant à convertir", min_value=1.0, step=1.0, value=0.0)
+        if convert_amount > 0:
+            try:
+                response = requests.post(f"{API_URL}/convert/", headers=headers, json={"amount": convert_amount})
+                if response.status_code == 200:
+                    st.success("✅ Conversion réussie !")
+                else:
+                    try:
+                        error_detail = response.json().get("detail", "Problème inconnu")
+                    except requests.exceptions.JSONDecodeError:
+                        error_detail = response.text
+                    st.error(f"❌ Erreur lors de la conversion : {error_detail}")
+            except requests.exceptions.RequestException as e:
+                st.error(f"🚨 Erreur de connexion à l'API : {e}")
+        else:
+            st.warning("⚠️ Veuillez entrer un montant valide avant de convertir.")
 
 
 
