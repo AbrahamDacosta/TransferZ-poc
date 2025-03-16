@@ -123,8 +123,12 @@ def deposit(username: str = Depends(auth_required), amount: float = 0):
 
 
 # Endpoint pour convertir en stablecoin
+class ConversionRequest(BaseModel):
+    amount: float
+    
 @app.post("/convert_stablecoin/")
-def convert_stablecoin(amount: float, user: str = Depends(get_current_user)):
+def convert_stablecoin(data: ConversionRequest, user: str = Depends(get_current_user)):
+    amount = data.amount
     db = load_db()
     if user not in db["users"]:
         raise HTTPException(status_code=404, detail="User not found")
