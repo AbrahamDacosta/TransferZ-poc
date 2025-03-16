@@ -1,7 +1,7 @@
 import os
 import json
 
-from fastapi import Header
+
 import jwt
 import datetime
 import requests
