@@ -103,7 +103,10 @@ if st.session_state["access_token"]:
         convert_amount = st.number_input("Montant à convertir", min_value=1.0, step=1.0, value=1.0)
         if convert_amount > 0:
             try:
+                st.write(f"DEBUG - Envoi de la requête avec montant : {convert_amount}")
                 response = requests.post(f"{API_URL}/convert/", headers=headers, json={"amount": convert_amount})
+                st.write(f"DEBUG - Réponse API : {response.status_code}")
+
                 if response.status_code == 200:
                     st.success("✅ Conversion réussie !")
                 else:
@@ -116,6 +119,7 @@ if st.session_state["access_token"]:
                 st.error(f"🚨 Erreur de connexion à l'API : {e}")
         else:
             st.warning("⚠️ Veuillez entrer un montant valide avant de convertir.")
+
 
 
 
