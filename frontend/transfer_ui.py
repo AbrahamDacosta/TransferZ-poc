@@ -104,24 +104,17 @@ if st.session_state["access_token"]:
         st.subheader("💱 Conversion en Stablecoin")
         headers = {"Authorization": f"Bearer {st.session_state['access_token']}"}
         amount_mobile = st.number_input("Montant à déposer", min_value=1.0)
-        if amount_mobile > 0:
-            try:
-                st.write(f"DEBUG - Envoi de la requête avec montant : {amount_mobile}")
-                response = requests.post(f"{API_URL}/convert_stablecoin/?amount={amount_mobile}", headers=headers)
-                st.write(f"DEBUG - Réponse API : {response.status_code}")
-
-                if response.status_code == 200:
-                    st.success("✅ Conversion réussie !")
-                else:
-                    try:
-                        error_detail = response.json().get("detail", "Problème inconnu")
-                    except requests.exceptions.JSONDecodeError:
-                        error_detail = response.text
-                    st.error(f"❌ Erreur lors de la conversion : {error_detail}")
-            except requests.exceptions.RequestException as e:
-                st.error(f"🚨 Erreur de connexion à l'API : {e}")
+        if st.button("🔄 Convertir"):
+            response = requests.post(f"{API_URL}/convert/", params={"amount": amount_mobile})
+        if response.status_code == 200:
+            st.success(response.json().get("message", "Conversion réussie !"))
         else:
-            st.warning("⚠️ Veuillez entrer un montant valide avant de convertir.")
+            try:
+                data = response.json()
+                st.error(f"⚠️ Erreur : {data.get('detail', 'Impossible de convertir le montant')} ")
+            except requests.exceptions.JSONDecodeError:
+                st.write("🔍 API Response:", response.status_code, response.text)
+                st.error(f"❌ Erreur: La réponse de l'API est invalide : {response.text}")
 
 
 
