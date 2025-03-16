@@ -123,7 +123,7 @@ def deposit(username: str = Depends(auth_required), amount: float = 0):
 
 
 # Endpoint pour convertir en stablecoin
-@app.post("/convert_stablecoin/")
+@app.post("/convert")
 def convert_stablecoin(amount: float, user: str = Depends(get_current_user)):
     db = load_db()
     if user not in db["users"]:
