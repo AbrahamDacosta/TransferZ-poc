@@ -102,10 +102,10 @@ if st.session_state["access_token"]:
     
     elif option == "Conversion en Stablecoin":
         st.subheader("💱 Conversion en Stablecoin")
-        convert_amount = st.number_input("Montant à convertir", min_value=1.0, step=100.0, value=1.0)
-        if convert_amount > 0:
+        amount_mobile = st.number_input("Montant à déposer", min_value=1.0)
+        if amount_mobile > 0:
             try:
-                st.write(f"DEBUG - Envoi de la requête avec montant : {convert_amount}")
+                st.write(f"DEBUG - Envoi de la requête avec montant : {amount_mobile}")
                 response = requests.post(f"{API_URL}/convert_stablecoin/", headers=Header,json={"amount": amount_mobile})
                 st.write(f"DEBUG - Réponse API : {response.status_code}")
 
