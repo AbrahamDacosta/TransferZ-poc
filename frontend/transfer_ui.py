@@ -106,7 +106,7 @@ if st.session_state["access_token"]:
         if convert_amount > 0:
             try:
                 st.write(f"DEBUG - Envoi de la requête avec montant : {convert_amount}")
-                response = requests.post(f"{API_URL}/convert_stablecoin/", headers=Header,json={"amount": convert_amount})
+                response = requests.post(f"{API_URL}/convert_stablecoin/", headers=Header,json={"amount": amount_mobile})
                 st.write(f"DEBUG - Réponse API : {response.status_code}")
 
                 if response.status_code == 200:
