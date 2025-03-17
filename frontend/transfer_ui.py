@@ -34,7 +34,7 @@ st.markdown("<div class='sub-title'>Simplifiez vos transactions avec une solutio
 
 # 📌 Configuration dynamique de l'API Backend
 if "api_url" not in st.session_state:
-    st.session_state["api_url"] = st.text_input("🔗 URL de l'API Backend", "https://transferz-api.onrender.com")
+    st.session_state["api_url"] = st.text_input("🔗 URL de l'API Backend", "https://transferz-poc.onrender.com")
 
 API_URL = st.session_state["api_url"]
 
