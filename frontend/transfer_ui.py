@@ -1,15 +1,7 @@
-import os
-import json
-
-
-import jwt
-import datetime
 import requests
 import streamlit as st
 
-API_URL = "https://transferz-poc.onrender.com"
-
-# Personnalisation de l'accueil
+# 🎨 Personnalisation de l'interface
 st.markdown(
     """
     <style>
@@ -29,138 +21,144 @@ st.markdown(
             padding: 20px;
             border-radius: 10px;
             box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+            max-width: 400px;
+            margin: auto;
         }
     </style>
     """,
     unsafe_allow_html=True
 )
 
-st.markdown("<div class='main-title'>🚀 TransferZ - La Solution de Paiement Innovante</div>", unsafe_allow_html=True)
-st.markdown("<div class='sub-title'>Simplifiez vos transactions avec notre plateforme sécurisée</div>", unsafe_allow_html=True)
-st.markdown("<br>", unsafe_allow_html=True)
+st.markdown("<div class='main-title'>🚀 TransferZ - Paiement Blockchain</div>", unsafe_allow_html=True)
+st.markdown("<div class='sub-title'>Simplifiez vos transactions avec une solution sécurisée</div>", unsafe_allow_html=True)
 
-# Gestion des sessions utilisateur
+# 📌 Configuration dynamique de l'API Backend
+if "api_url" not in st.session_state:
+    st.session_state["api_url"] = st.text_input("🔗 URL de l'API Backend", "https://transferz-api.onrender.com")
+
+API_URL = st.session_state["api_url"]
+
+# 📌 Gestion des sessions utilisateur
 if "access_token" not in st.session_state:
     st.session_state["access_token"] = None
 
-# Onglets pour Inscription / Connexion
-tab1, tab2 = st.tabs(["🔐 Connexion", "📝 Inscription"])
+# 📌 Formulaire de connexion utilisateur
+st.markdown("<div class='login-container'>", unsafe_allow_html=True)
+st.subheader("🔐 Connexion")
+username = st.text_input("Nom d'utilisateur")
+password = st.text_input("Mot de passe", type="password")
+if st.button("Se connecter"):
+    response = requests.post(f"{API_URL}/login/", json={"username": username, "password": password})
+    if response.status_code == 200:
+        data = response.json()
+        st.session_state["access_token"] = data["access_token"]
+        st.success("✅ Connexion réussie !")
+    else:
+        st.error("❌ Identifiants incorrects")
+st.markdown("</div>", unsafe_allow_html=True)
 
-with tab2:
-    st.subheader("📝 Inscription")
-    new_username = st.text_input("Nom d'utilisateur")
-    new_password = st.text_input("Mot de passe", type="password")
-    if st.button("Créer un compte"):
-        response = requests.post(f"{API_URL}/register/", json={"username": new_username, "password": new_password})
-        if response.status_code == 200:
-            st.success("✅ Inscription réussie ! Vous pouvez maintenant vous connecter.")
-        else:
-            try:
-                error_detail = response.json().get("detail", "Problème inconnu")
-            except requests.exceptions.JSONDecodeError:
-                error_detail = response.text  # Si la réponse n'est pas du JSON
-            st.error(f"❌ Erreur lors de l'inscription : {error_detail}")
+# 📌 Formulaire d'inscription utilisateur
+st.markdown("<div class='login-container'>", unsafe_allow_html=True)
+st.subheader("🆕 Inscription")
+new_username = st.text_input("Nom d'utilisateur (Inscription)")
+new_password = st.text_input("Mot de passe (Inscription)", type="password")
 
-with tab1:
-    st.subheader("🔐 Connexion")
-    username = st.text_input("Nom d'utilisateur", key="login_username")
-    password = st.text_input("Mot de passe", type="password", key="login_password")
-    if st.button("Se connecter"):
-        response = requests.post(f"{API_URL}/login/", json={"username": username, "password": password})
-        if response.status_code == 200:
-            data = response.json()
-            st.session_state["access_token"] = data["access_token"]
-            st.success("✅ Connexion réussie !")
-        else:
-            try:
-                error_detail = response.json().get("detail", "Identifiants incorrects")
-            except requests.exceptions.JSONDecodeError:
-                error_detail = response.text
-            st.error(f"❌ Erreur lors de la connexion : {error_detail}")
+st.markdown("📲 **Ajoutez vos numéros Mobile Money (max 3)**")
+phone_numbers = []
+for i in range(3):
+    phone = st.text_input(f"Numéro Mobile Money {i+1} (optionnel)")
+    if phone:
+        phone_numbers.append(phone)
 
+if st.button("S'inscrire"):
+    response = requests.post(f"{API_URL}/register/", json={
+        "username": new_username,
+        "password": new_password,
+        "phone_numbers": phone_numbers
+    })
+    if response.status_code == 200:
+        st.success("✅ Inscription réussie !")
+    else:
+        st.error(f"❌ Erreur : {response.json().get('detail', 'Inscription impossible')}")
+st.markdown("</div>", unsafe_allow_html=True)
 
-# Si l'utilisateur est connecté, afficher les fonctionnalités
+# 📌 Interface après connexion
 if st.session_state["access_token"]:
-    st.markdown("<hr>", unsafe_allow_html=True)
     st.sidebar.title("📌 Menu")
-    option = st.sidebar.radio("Navigation", ["Dépôt Mobile Money", "Conversion en Stablecoin", "Transfert P2P", "Retrait", "Historique des Transactions", "Vérification du Solde"])
+    option = st.sidebar.radio("Navigation", [
+        "Profil", "Dépôt Mobile Money", "Conversion en Stablecoin",
+        "Transfert P2P", "Retrait", "Historique des Transactions"
+    ])
     
-    if option == "Dépôt Mobile Money":
-        st.subheader("📲 Dépôt d'argent via Mobile Money")
-        amount_mobile = st.number_input("Montant à déposer", min_value=1.0)
-        if st.button("Déposer via Mobile Money"):
-            headers = {"Authorization": f"Bearer {st.session_state['access_token']}"}
-            response = requests.post(f"{API_URL}/deposit/", headers=headers, json={"amount": amount_mobile})
-            if response.status_code == 200:
-                st.success("✅ Dépôt Mobile Money réussi !")
-            else:
-                try:
-                    error_detail = response.json().get("detail", "Problème inconnu")
-                except requests.exceptions.JSONDecodeError:
-                    error_detail = response.text
-                st.error(f"❌ Erreur lors du dépôt Mobile Money : {error_detail}")
-    
-    elif option == "Conversion en Stablecoin":
-        st.subheader("💱 Conversion en Stablecoin")
+    if option == "Profil":
+        st.subheader("📱 Mes numéros Mobile Money")
         headers = {"Authorization": f"Bearer {st.session_state['access_token']}"}
-        amount_mobile = st.number_input("Montant à déposer", min_value=1.0)
-        if st.button("🔄 Convertir"):
-            response = requests.post(f"{API_URL}/convert/", params={"amount": amount_mobile})
+        response = requests.get(f"{API_URL}/user/phones/", headers=headers)
         if response.status_code == 200:
-            st.success(response.json().get("message", "Conversion réussie !"))
+            phone_numbers = response.json()["phone_numbers"]
+            st.write(f"📲 **Numéros liés à votre compte** : {', '.join(phone_numbers)}")
         else:
-            try:
-                data = response.json()
-                st.error(f"⚠️ Erreur : {data.get('detail', 'Impossible de convertir le montant')} ")
-            except requests.exceptions.JSONDecodeError:
-                st.write("🔍 API Response:", response.status_code, response.text)
-                st.error(f"❌ Erreur: La réponse de l'API est invalide : {response.text}")
+            st.error("❌ Impossible de récupérer les numéros Mobile Money.")
 
+    elif option == "Dépôt Mobile Money":
+        st.subheader("📲 Dépôt d'argent")
+        headers = {"Authorization": f"Bearer {st.session_state['access_token']}"}
+        response = requests.get(f"{API_URL}/user/phones/", headers=headers)
+        if response.status_code == 200:
+            phone_numbers = response.json()["phone_numbers"]
+            selected_phone = st.selectbox("📱 Sélectionnez un numéro Mobile Money", phone_numbers)
+            amount_deposit = st.number_input("💰 Montant à déposer (FCFA)", min_value=1.0)
+            if st.button("Déposer"):
+                response = requests.post(f"{API_URL}/deposit/", headers=headers, json={
+                    "phone_number": selected_phone,
+                    "amount": amount_deposit
+                })
+                if response.status_code == 200:
+                    st.success(f"✅ Dépôt réussi !")
+                else:
+                    st.error(f"❌ Erreur : {response.json().get('detail', 'Échec du dépôt')}")
+        else:
+            st.error("❌ Impossible de récupérer les numéros Mobile Money.")
 
+    elif option == "Conversion en Stablecoin":
+        st.subheader("💱 Conversion FCFA → Stablecoin")
+        amount_convert = st.number_input("💰 Montant à convertir (FCFA)", min_value=1.0)
+        if st.button("Convertir"):
+            response = requests.post(f"{API_URL}/convert_stablecoin/", headers=headers, json={"amount": amount_convert})
+            if response.status_code == 200:
+                st.success("✅ Conversion réussie !")
+            else:
+                st.error(f"❌ Erreur : {response.json().get('detail', 'Échec de la conversion')}")
 
-
-
-
-    
     elif option == "Transfert P2P":
         st.subheader("🔄 Transfert P2P")
-        receiver = st.text_input("Nom du destinataire")
-        amount_transfer = st.number_input("Montant à transférer", min_value=1.0)
+        receiver = st.text_input("👤 Nom du destinataire")
+        amount_transfer = st.number_input("💰 Montant à transférer (USDT)", min_value=1.0)
         if st.button("Transférer"):
-            headers = {"Authorization": f"Bearer {st.session_state['access_token']}"}
-            response = requests.post(f"{API_URL}/transfer/", headers=headers, json={"receiver": receiver, "amount": amount_transfer})
+            response = requests.post(f"{API_URL}/transfer/", headers=headers, json={
+                "receiver": receiver,
+                "amount": amount_transfer
+            })
             if response.status_code == 200:
                 st.success("✅ Transfert réussi !")
             else:
-                st.error("❌ Erreur lors du transfert")
-    
+                st.error(f"❌ Erreur : {response.json().get('detail', 'Échec du transfert')}")
+
     elif option == "Retrait":
-        st.subheader("💸 Retrait en monnaie électronique")
-        withdraw_amount = st.number_input("Montant à retirer", min_value=1.0)
-        if st.button("Retirer en monnaie électronique"):
-            headers = {"Authorization": f"Bearer {st.session_state['access_token']}"}
-            response = requests.post(f"{API_URL}/withdraw/", headers=headers, json={"amount": withdraw_amount})
-            if response.status_code == 200:
-                st.success("✅ Retrait réussi !")
-            else:
-                st.error("❌ Erreur lors du retrait")
-    
-    elif option == "Historique des Transactions":
-        st.subheader("📋 Historique des Transactions")
-        headers = {"Authorization": f"Bearer {st.session_state['access_token']}"}
-        response = requests.get(f"{API_URL}/transactions/", headers=headers)
+        st.subheader("💸 Retrait Mobile Money")
+        response = requests.get(f"{API_URL}/user/phones/", headers=headers)
         if response.status_code == 200:
-            transactions = response.json()
-            st.write(transactions)
+            phone_numbers = response.json()["phone_numbers"]
+            selected_phone = st.selectbox("📱 Sélectionnez un numéro Mobile Money", phone_numbers)
+            amount_withdraw = st.number_input("💰 Montant à retirer (USDT)", min_value=1.0)
+            if st.button("Retirer"):
+                response = requests.post(f"{API_URL}/withdraw/", headers=headers, json={
+                    "phone_number": selected_phone,
+                    "amount": amount_withdraw
+                })
+                if response.status_code == 200:
+                    st.success("✅ Retrait réussi !")
+                else:
+                    st.error(f"❌ Erreur : {response.json().get('detail', 'Échec du retrait')}")
         else:
-            st.error("❌ Erreur lors de la récupération de l'historique")
-    
-    elif option == "Vérification du Solde":
-        st.subheader("💳 Solde Disponible")
-        headers = {"Authorization": f"Bearer {st.session_state['access_token']}"}
-        response = requests.get(f"{API_URL}/balance/", headers=headers)
-        if response.status_code == 200:
-            balance = response.json()
-            st.write(f"💰 Solde FCFA : {balance['balance_fcfa']} \n💱 Solde Stablecoin : {balance['balance_stablecoin']}")
-        else:
-            st.error("❌ Erreur lors de la récupération du solde")
+            st.error("❌ Impossible de récupérer les numéros Mobile Money.")
