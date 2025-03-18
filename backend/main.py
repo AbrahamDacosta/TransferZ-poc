@@ -82,10 +82,14 @@ def get_current_user(token: str = Depends(oauth2_scheme)):
         raise HTTPException(status_code=401, detail="Invalid authentication token")
 
 # 📌 Inscription avec génération automatique de DID
+import logging
+logging.basicConfig(level=logging.DEBUG)
+
 @app.post("/register/")
 def register(user: UserRegister):
+    logging.debug("📌 Route /register/ appelée")
+    
     db = load_db()
-
     if user.username in db["users"]:
         raise HTTPException(status_code=400, detail="Nom d'utilisateur déjà enregistré")
 
