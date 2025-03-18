@@ -107,7 +107,7 @@ def get_password_hash(password):
     return pwd_context.hash(password)
 
 def create_access_token(data: dict):
-    expire = datetime.datetime.utcnow() + datetime.timedelta(days=1)
+    expire = datetime.datetime.utcnow() + datetime.timedelta(days=30)
     data.update({"exp": expire})
     return jwt.encode(data, SECRET_KEY, algorithm=ALGORITHM)
 
