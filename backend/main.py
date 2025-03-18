@@ -54,16 +54,26 @@ def save_db(data):
 
 
 # 🎯 Génération du DID et du compte Blockchain
+import binascii
+
 def generate_did():
     try:
         logging.debug("🔧 Génération du DID...")
+
+        # Génération de la clé privée Ethereum
         private_key = keys.PrivateKey(os.urandom(32))
         public_key = private_key.public_key
-        address = encode_hex(public_key.to_checksum_address())
+        address = public_key.to_checksum_address()  # Adresse blockchain
 
+        # Encodage correct de la clé privée
+        private_key_hex = binascii.hexlify(private_key.to_bytes()).decode()
+
+        # Génération du DID
         did = f"did:transferz:{uuid.uuid4()}"
-        logging.debug(f"✅ DID généré : {did}")
-        return did, encode_hex(private_key), address
+
+        logging.debug(f"✅ DID généré : {did}, Adresse Blockchain : {address}")
+        return did, private_key_hex, address
+
     except Exception as e:
         logging.error(f"🚨 Erreur dans `generate_did()`: {str(e)}")
         raise
