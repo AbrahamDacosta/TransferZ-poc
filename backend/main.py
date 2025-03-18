@@ -24,28 +24,50 @@ DB_PATH = "/tmp/database.json"
 if not os.path.exists(DB_PATH):
     with open(DB_PATH, "w") as f:
         json.dump({"users": {}, "transactions": []}, f, indent=4)
-
 def load_db():
-    db_path = "/tmp/database.json"  # Vérifie si le fichier est bien ici
-    if not os.path.exists(db_path):
-        with open(db_path, "w") as f:
-            json.dump({"users": {}, "transactions": []}, f, indent=4)
-    with open(db_path, "r") as f:
-        return json.load(f)
+    try:
+        db_path = "/tmp/database.json"
+        if not os.path.exists(db_path):
+            logging.debug("🚨 `database.json` introuvable, création d’un nouveau fichier.")
+            with open(db_path, "w") as f:
+                json.dump({"users": {}, "transactions": []}, f, indent=4)
+
+        logging.debug(f"📖 Chargement de `database.json`...")
+        with open(db_path, "r") as f:
+            return json.load(f)
+    except Exception as e:
+        logging.error(f"❌ Erreur lors du chargement de la base de données : {str(e)}")
+        raise
+
 
 
 def save_db(data):
-    with open(DB_PATH, "w") as f:
-        json.dump(data, f, indent=4)
+    try:
+        db_path = "/tmp/database.json"
+        logging.debug(f"💾 Sauvegarde des données dans `{db_path}`...")
+        with open(db_path, "w") as f:
+            json.dump(data, f, indent=4)
+        logging.debug("✅ Sauvegarde terminée !")
+    except Exception as e:
+        logging.error(f"❌ Erreur lors de la sauvegarde : {str(e)}")
+        raise
+
 
 # 🎯 Génération du DID et du compte Blockchain
 def generate_did():
-    private_key = keys.PrivateKey(os.urandom(32))
-    public_key = private_key.public_key
-    address = encode_hex(public_key.to_checksum_address())
+    try:
+        logging.debug("🔧 Génération du DID...")
+        private_key = keys.PrivateKey(os.urandom(32))
+        public_key = private_key.public_key
+        address = encode_hex(public_key.to_checksum_address())
 
-    did = f"did:transferz:{uuid.uuid4()}"
-    return did, encode_hex(private_key), address
+        did = f"did:transferz:{uuid.uuid4()}"
+        logging.debug(f"✅ DID généré : {did}")
+        return did, encode_hex(private_key), address
+    except Exception as e:
+        logging.error(f"🚨 Erreur dans `generate_did()`: {str(e)}")
+        raise
+
 
 # 📌 Modèles Pydantic
 class UserRegister(BaseModel):
