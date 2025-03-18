@@ -1,7 +1,7 @@
 import requests
 import streamlit as st
 
-API_URL = "https://transferz-api.onrender.com"
+API_URL = "https://transferz-poc.onrender.com"
 
 # 🎨 UI Personnalisée
 st.markdown(
