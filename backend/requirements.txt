@@ -5,3 +5,4 @@ passlib
 python-dotenv
 
 eth-keys
+pycryptodome
