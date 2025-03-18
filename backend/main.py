@@ -26,8 +26,13 @@ if not os.path.exists(DB_PATH):
         json.dump({"users": {}, "transactions": []}, f, indent=4)
 
 def load_db():
-    with open(DB_PATH, "r") as f:
+    db_path = "/tmp/database.json"  # Vérifie si le fichier est bien ici
+    if not os.path.exists(db_path):
+        with open(db_path, "w") as f:
+            json.dump({"users": {}, "transactions": []}, f, indent=4)
+    with open(db_path, "r") as f:
         return json.load(f)
+
 
 def save_db(data):
     with open(DB_PATH, "w") as f:
