@@ -183,16 +183,24 @@ def list_did_users():
 
 # 📲 Dépôt d’argent via Mobile Money
 @app.post("/deposit/")
-def deposit_funds(data: DepositRequest, user: str = Depends(get_current_user)):
+def deposit_funds(data: dict, user: str = Depends(get_current_user)):
+    logging.debug(f"📡 Données reçues : {data}")
     db = load_db()
 
-    if user not in db["users"] or data.phone_number not in db["users"][user]["phone_numbers"]:
+    if user not in db["users"]:
+        raise HTTPException(status_code=400, detail="Utilisateur non trouvé.")
+
+    if "phone_number" not in data or "amount" not in data:
+        raise HTTPException(status_code=400, detail="Données manquantes : phone_number ou amount.")
+
+    if data["phone_number"] not in db["users"][user]["phone_numbers"]:
         raise HTTPException(status_code=400, detail="Numéro Mobile Money non enregistré.")
 
-    db["users"][user]["balance_fcfa"] += data.amount
+    db["users"][user]["balance_fcfa"] += data["amount"]
     save_db(db)
 
     return {"message": "Dépôt réussi", "new_balance_fcfa": db["users"][user]["balance_fcfa"]}
+
 
 # 🔄 Transfert P2P via DID
 @app.post("/transfer/")
