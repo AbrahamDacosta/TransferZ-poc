@@ -4,3 +4,4 @@ pyjwt
 passlib
 python-dotenv
 
+eth-keys
