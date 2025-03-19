@@ -98,11 +98,14 @@ if st.session_state["access_token"]:
 
         amount_deposit = st.number_input("💰 Montant à déposer (FCFA)", min_value=1.0)
         if st.button("Déposer"):
+            st.write(f"📡 Envoi de la requête avec : {selected_operator} - {amount_deposit}")
+            
             headers = {"Authorization": f"Bearer {st.session_state['access_token']}"}
             response = requests.post(f"{API_URL}/deposit/", headers=headers, json={
                 "phone_number": selected_operator,
                 "amount": amount_deposit
             })
+
             if response.status_code == 200:
                 st.success(f"✅ Dépôt réussi de {amount_deposit} FCFA sur TransferZ !")
             else:
