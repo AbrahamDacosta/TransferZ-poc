@@ -100,7 +100,7 @@ if st.session_state["access_token"]:
         # Charger les numéros de téléphone enregistrés depuis l'API
     def get_registered_numbers():
         headers = {"Authorization": f"Bearer {st.session_state['access_token']}"}
-        response = requests.get(f"{API_URL}/user/phones/", headers=headers)
+        response = requests.get(f"{API_URL}/user/add_phone/", headers=headers)
 
         if response.status_code == 200:
             return response.json()  # Retourne la liste des numéros enregistrés
