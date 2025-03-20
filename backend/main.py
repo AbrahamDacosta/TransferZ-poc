@@ -184,8 +184,10 @@ def list_did_users():
 # 📲 Dépôt d’argent via Mobile Money
 @app.post("/deposit/")
 def deposit_funds(data: dict, user: str = Depends(get_current_user)):
-    logging.debug(f"📡 Données reçues : {data}")
     db = load_db()
+
+    logging.debug(f"📞 Numéros enregistrés pour {user} : {db['users'][user]['phone_numbers']}")
+    logging.debug(f"📡 Données reçues : {data}")
 
     if user not in db["users"]:
         raise HTTPException(status_code=400, detail="Utilisateur non trouvé.")
@@ -194,7 +196,7 @@ def deposit_funds(data: dict, user: str = Depends(get_current_user)):
         raise HTTPException(status_code=400, detail="Données manquantes : phone_number ou amount.")
 
     if data["phone_number"] not in db["users"][user]["phone_numbers"]:
-        raise HTTPException(status_code=400, detail="Numéro Mobile Money non enregistré.")
+        raise HTTPException(status_code=400, detail=f"Numéro Mobile Money non enregistré. Numéros enregistrés : {db['users'][user]['phone_numbers']}")
 
     db["users"][user]["balance_fcfa"] += data["amount"]
     save_db(db)
