@@ -162,6 +162,18 @@ def login(user: UserLogin):
     access_token = create_access_token(data={"sub": user.username})
     return {"access_token": access_token}
 
+@app.get("/user/phones/")
+def get_user_phones(user: str = Depends(get_current_user)):
+    db = load_db()
+    
+    if user not in db["users"]:
+        raise HTTPException(status_code=404, detail="Utilisateur non trouvé.")
+    
+    logging.debug(f"📞 Numéros enregistrés pour {user} : {db['users'][user]['phone_numbers']}")
+    
+    return db["users"][user]["phone_numbers"]
+
+
 # 📲 Ajout d’un numéro Mobile Money
 @app.post("/user/add_phone/")
 def add_phone(data: AddPhoneRequest, user: str = Depends(get_current_user)):
