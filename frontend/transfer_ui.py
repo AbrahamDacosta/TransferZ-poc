@@ -85,10 +85,10 @@ if st.session_state["access_token"]:
 
         # Interface visuelle pour choisir l'opérateur
         operator_icons = {
-            "MTN": "https://upload.wikimedia.org/wikipedia/commons/thumb/f/fd/Mtn-logo.svg/1200px-Mtn-logo.svg.png",
-            "Orange": "https://upload.wikimedia.org/wikipedia/commons/thumb/8/86/Orange_logo.svg/1200px-Orange_logo.svg.png",
-            "Moov": "https://upload.wikimedia.org/wikipedia/commons/thumb/4/4e/Moov_Africa.svg/1200px-Moov_Africa.svg.png",
-            "Wave": "https://www.wave.com/static/brand/logo.svg"
+            "MTN": "https://htxt.co.za/wp-content/uploads/2022/04/mtn-logo-2022-black-header-1536x864.jpg",
+            "Orange": "https://www.annuaireci.com/Content/UserFiles/Ivory%20Coast/Upload/LOGO%20ORANGE.png",
+            "Moov": "https://is1-ssl.mzstatic.com/image/thumb/Purple221/v4/34/85/5e/34855e62-f17e-d858-775f-8c269406e610/AppIcon-0-0-1x_U007emarketing-0-8-0-0-85-220.png/1200x600wa.png",
+            "Wave": "https://play-lh.googleusercontent.com/-Mp3XW7uhwn3KGQxUKGPoc4MbA5ti-3-q23TgoVi9ujBgHWW5n4IySvlG5Exwrxsjw=w240-h480-rw"
         }
 
         selected_operator = st.radio("Choisissez votre opérateur :", list(operator_icons.keys()),
@@ -97,12 +97,19 @@ if st.session_state["access_token"]:
         st.image(operator_icons[selected_operator], width=100)
 
         amount_deposit = st.number_input("💰 Montant à déposer (FCFA)", min_value=1.0)
-        if st.button("Déposer"):
-            st.write(f"📡 Envoi de la requête avec : {selected_operator} - {amount_deposit}")
-            
+    if st.button("Déposer"):
+            phone_mapping = {
+                "Orange": "2250700000000",
+                "MTN": "2250500000000",
+                "Moov": "2250100000000"
+            }
+
+            real_phone_number = phone_mapping.get(selected_operator, selected_operator)
+            st.write(f"📡 Envoi de la requête avec numéro réel : {real_phone_number}")
+
             headers = {"Authorization": f"Bearer {st.session_state['access_token']}"}
             response = requests.post(f"{API_URL}/deposit/", headers=headers, json={
-                "phone_number": selected_operator,
+                "phone_number": real_phone_number,
                 "amount": amount_deposit
             })
 
@@ -110,6 +117,7 @@ if st.session_state["access_token"]:
                 st.success(f"✅ Dépôt réussi de {amount_deposit} FCFA sur TransferZ !")
             else:
                 st.error(f"❌ Erreur : {response.json().get('detail', 'Échec du dépôt')}")
+
 
     elif option == "Transfert P2P":
         st.subheader("🔄 Transfert P2P via DID")
