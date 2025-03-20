@@ -97,19 +97,33 @@ if st.session_state["access_token"]:
         st.image(operator_icons[selected_operator], width=100)
 
         amount_deposit = st.number_input("💰 Montant à déposer (FCFA)", min_value=1.0)
-    if st.button("Déposer"):
-            phone_mapping = {
-                "Orange": "2250700000000",
-                "MTN": "2250500000000",
-                "Moov": "2250100000000"
-            }
+        # Charger les numéros de téléphone enregistrés depuis l'API
+    def get_registered_numbers():
+        headers = {"Authorization": f"Bearer {st.session_state['access_token']}"}
+        response = requests.get(f"{API_URL}/user/phones/", headers=headers)
 
-            real_phone_number = phone_mapping.get(selected_operator, selected_operator)
-            st.write(f"📡 Envoi de la requête avec numéro réel : {real_phone_number}")
+        if response.status_code == 200:
+            return response.json()  # Retourne la liste des numéros enregistrés
+        else:
+            st.error(f"❌ Impossible de récupérer les numéros Mobile Money.")
+            return []
+
+    # Récupération dynamique des numéros Mobile Money liés au compte utilisateur
+    registered_numbers = get_registered_numbers()
+
+    if st.button("Déposer"):
+        # Vérifier si des numéros existent
+        if not registered_numbers:
+            st.error("❌ Aucun numéro Mobile Money enregistré ! Ajoutez un numéro avant de déposer.")
+        else:
+            selected_phone_number = st.selectbox("Sélectionnez votre numéro Mobile Money", registered_numbers)
+            amount_deposit = st.number_input("Montant à déposer", min_value=1.0)
+
+            st.write(f"📡 Envoi de la requête avec numéro réel : {selected_phone_number}")
 
             headers = {"Authorization": f"Bearer {st.session_state['access_token']}"}
             response = requests.post(f"{API_URL}/deposit/", headers=headers, json={
-                "phone_number": real_phone_number,
+                "phone_number": selected_phone_number,
                 "amount": amount_deposit
             })
 
@@ -117,6 +131,7 @@ if st.session_state["access_token"]:
                 st.success(f"✅ Dépôt réussi de {amount_deposit} FCFA sur TransferZ !")
             else:
                 st.error(f"❌ Erreur : {response.json().get('detail', 'Échec du dépôt')}")
+
 
 
     elif option == "Transfert P2P":
