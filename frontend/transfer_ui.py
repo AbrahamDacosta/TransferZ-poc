@@ -81,55 +81,55 @@ if st.session_state["access_token"]:
                 st.error(f"❌ Erreur : {response.json().get("detail", "Échec de l'ajout")}")
 
     # ------------- DÉPÔT MOBILE MONEY (UI + logique) ------------------
-elif option == "Dépôt Mobile Money":
-    st.subheader("📲 Dépôt d'argent")
+    elif option == "Dépôt Mobile Money":
+        st.subheader("📲 Dépôt d'argent")
 
-    # 1️⃣  Logos opérateurs
-    operator_icons = {
-        "MTN":   "https://htxt.co.za/wp-content/uploads/2022/04/mtn-logo-2022-black-header-1536x864.jpg",
-        "Orange":"https://www.annuaireci.com/Content/UserFiles/Ivory%20Coast/Upload/LOGO%20ORANGE.png",
-        "Moov":  "https://is1-ssl.mzstatic.com/image/thumb/Purple221/v4/34/85/5e/34855e62-f17e-d858-775f-8c269406e610/AppIcon-0-0-1x_U007emarketing-0-8-0-0-85-220.png/1200x600wa.png",
-        "Wave":  "https://play-lh.googleusercontent.com/-Mp3XW7uhwn3KGQxUKGPoc4MbA5ti-3-q23TgoVi9ujBgHWW5n4IySvlG5Exwrxsjw=w240-h480-rw"
-    }
+        # 1️⃣  Logos opérateurs
+        operator_icons = {
+            "MTN":   "https://htxt.co.za/wp-content/uploads/2022/04/mtn-logo-2022-black-header-1536x864.jpg",
+            "Orange":"https://www.annuaireci.com/Content/UserFiles/Ivory%20Coast/Upload/LOGO%20ORANGE.png",
+            "Moov":  "https://is1-ssl.mzstatic.com/image/thumb/Purple221/v4/34/85/5e/34855e62-f17e-d858-775f-8c269406e610/AppIcon-0-0-1x_U007emarketing-0-8-0-0-85-220.png/1200x600wa.png",
+            "Wave":  "https://play-lh.googleusercontent.com/-Mp3XW7uhwn3KGQxUKGPoc4MbA5ti-3-q23TgoVi9ujBgHWW5n4IySvlG5Exwrxsjw=w240-h480-rw"
+        }
 
-    selected_operator = st.radio(
-        "Choisissez votre opérateur :",
-        list(operator_icons.keys()),
-        format_func=lambda op: f"{op}"
-    )
-    st.image(operator_icons[selected_operator], width=100)
+        selected_operator = st.radio(
+            "Choisissez votre opérateur :",
+            list(operator_icons.keys()),
+            format_func=lambda op: f"{op}"
+        )
+        st.image(operator_icons[selected_operator], width=100)
 
-    # 2️⃣  Charger dynamiquement les numéros enregistrés
-    @st.cache_data(ttl=60)
-    def get_registered_numbers(token):
-        headers = {"Authorization": f"Bearer {token}"}
-        resp = requests.get(f"{API_URL}/user/phones/", headers=headers)
-        return resp.json() if resp.status_code == 200 else []
+        # 2️⃣  Charger dynamiquement les numéros enregistrés
+        @st.cache_data(ttl=60)
+        def get_registered_numbers(token):
+            headers = {"Authorization": f"Bearer {token}"}
+            resp = requests.get(f"{API_URL}/user/phones/", headers=headers)
+            return resp.json() if resp.status_code == 200 else []
 
-    registered_numbers = get_registered_numbers(st.session_state["access_token"])
+        registered_numbers = get_registered_numbers(st.session_state["access_token"])
 
-    if not registered_numbers:
-        st.warning("⚠️ Aucun numéro Mobile Money enregistré. Ajoutez‑en un dans le menu Profil.")
-        st.stop()
+        if not registered_numbers:
+            st.warning("⚠️ Aucun numéro Mobile Money enregistré. Ajoutez‑en un dans le menu Profil.")
+            st.stop()
 
-    selected_phone = st.selectbox("📱 Numéro Mobile Money", registered_numbers)
+        selected_phone = st.selectbox("📱 Numéro Mobile Money", registered_numbers)
 
-    # 3️⃣  Montant unique (un seul input)
-    # amount_fcfa = st.number_input("💰 Montant à déposer (FCFA)", min_value=1.0, step=100.0)
+        # 3️⃣  Montant unique (un seul input)
+        # amount_fcfa = st.number_input("💰 Montant à déposer (FCFA)", min_value=1.0, step=100.0)
 
-    # 4️⃣  Bouton Dépôt
-    if st.button("Déposer"):
-        headers = {"Authorization": f"Bearer {st.session_state['access_token']}"}
-        payload = {"phone_number": selected_phone, "amount": amount_fcfa}
+        # 4️⃣  Bouton Dépôt
+        if st.button("Déposer"):
+            headers = {"Authorization": f"Bearer {st.session_state['access_token']}"}
+            payload = {"phone_number": selected_phone, "amount": amount_fcfa}
 
-        st.write(f"📡 Requête envoyée : {payload}")   # debug
+            st.write(f"📡 Requête envoyée : {payload}")   # debug
 
-        resp = requests.post(f"{API_URL}/deposit/", headers=headers, json=payload)
+            resp = requests.post(f"{API_URL}/deposit/", headers=headers, json=payload)
 
-        if resp.status_code == 200:
-            st.success(f"✅ Dépôt réussi de {amount_fcfa:.0f} FCFA sur TransferZ !")
-        else:
-            st.error(f"❌ Erreur : {resp.json().get('detail', 'Échec du dépôt')}")
+            if resp.status_code == 200:
+                st.success(f"✅ Dépôt réussi de {amount_fcfa:.0f} FCFA sur TransferZ !")
+            else:
+                st.error(f"❌ Erreur : {resp.json().get('detail', 'Échec du dépôt')}")
 # ------------------------------------------------------------------
 
 
