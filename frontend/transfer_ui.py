@@ -115,7 +115,7 @@ elif option == "Dépôt Mobile Money":
     selected_phone = st.selectbox("📱 Numéro Mobile Money", registered_numbers)
 
     # 3️⃣  Montant unique (un seul input)
-    amount_fcfa = st.number_input("💰 Montant à déposer (FCFA)", min_value=1.0, step=100.0)
+    # amount_fcfa = st.number_input("💰 Montant à déposer (FCFA)", min_value=1.0, step=100.0)
 
     # 4️⃣  Bouton Dépôt
     if st.button("Déposer"):
