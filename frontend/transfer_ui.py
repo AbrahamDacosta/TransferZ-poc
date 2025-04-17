@@ -190,7 +190,7 @@ if st.session_state["access_token"]:
             
             
             # ----------------- SECTION ADMIN COMPLETE ------------------
-    if st.session_state.get("username") == "admin":
+    if st.session_state.get("admin_authenticated"):
         st.markdown("## 👑 Espace Admin")
 
         with st.expander("➕ Ajouter un utilisateur"):
@@ -237,4 +237,14 @@ if st.session_state["access_token"]:
                     st.success("✅ Solde mis à jour.")
                 else:
                     st.error(f"❌ {r.json().get('detail')}")
+
+        with st.sidebar.expander("🔑 Accès Admin"):
+            admin_user = st.text_input("👤 Nom d'utilisateur Admin", key="admin_user")
+            admin_pass = st.text_input("🔒 Mot de passe Admin", type="password", key="admin_pass")
+            if st.button("Se connecter comme Admin"):
+                if admin_user == "admin" and admin_pass == "adminpass":
+                    st.session_state["admin_authenticated"] = True
+                    st.success("✅ Accès Admin accordé.")
+                else:
+                    st.error("❌ Identifiants Admin incorrects.")
 
