@@ -190,61 +190,77 @@ if st.session_state["access_token"]:
             
             
             # ----------------- SECTION ADMIN COMPLETE ------------------
-    if st.session_state.get("admin_authenticated"):
-        st.markdown("## 👑 Espace Admin")
+    # 🔐 Interface d'authentification admin dans Streamlit
 
-        with st.expander("➕ Ajouter un utilisateur"):
-            with st.form("admin_add_user_form"):
-                new_username = st.text_input("👤 Nom d'utilisateur")
-                new_password = st.text_input("🔑 Mot de passe")
-                phone = st.text_input("📱 Numéro Mobile Money")
-                fcfa = st.number_input("💰 Solde FCFA", min_value=0, step=1000, key="fcfa_admin")
-                stable = st.number_input("💱 Solde Stablecoin", min_value=0.0, step=10.0, key="stable_admin")
-                if st.form_submit_button("Créer"):
-                    payload = {
-                        "username": new_username,
-                        "password": new_password,
-                        "phone_number": phone,
-                        "balance_fcfa": fcfa,
-                        "balance_stablecoin": stable
-                    }
-                    r = requests.post(f"{API_URL}/admin/add_user/", json=payload)
-                    if r.status_code == 200:
-                        st.success(f"✅ Utilisateur ajouté avec DID : {r.json().get('did')}")
-                    else:
-                        st.error(f"❌ {r.json().get('detail')}")
+# Importation
+import streamlit as st
+import requests
 
-        with st.expander("🗑 Supprimer un utilisateur"):
-            user_to_delete = st.text_input("Nom d'utilisateur à supprimer")
-            if st.button("Supprimer"):
-                r = requests.post(f"{API_URL}/admin/delete_user/", json={"username": user_to_delete})
+API_URL = "https://transferz-api.onrender.com"
+
+# Initialisation des variables de session
+if "admin_authenticated" not in st.session_state:
+    st.session_state.admin_authenticated = False
+
+# 🔒 Formulaire d'authentification Admin
+with st.sidebar.expander("🔐 Accès Admin"):
+    admin_user = st.text_input("Nom Admin", key="admin_user")
+    admin_pass = st.text_input("Mot de passe Admin", type="password", key="admin_pass")
+    if st.button("Connexion Admin"):
+        if admin_user == "admin" and admin_pass == "adminpass":
+            st.session_state.admin_authenticated = True
+            st.success("✅ Accès Admin activé")
+        else:
+            st.error("❌ Identifiants Admin incorrects")
+
+# ✅ Interface Admin après authentification
+if st.session_state.admin_authenticated:
+    st.markdown("## 👑 Espace Admin")
+
+    # ➕ Ajout d'utilisateur
+    with st.expander("➕ Ajouter un utilisateur"):
+        with st.form("admin_add_user_form"):
+            new_username = st.text_input("👤 Nom d'utilisateur")
+            new_password = st.text_input("🔑 Mot de passe")
+            phone = st.text_input("📱 Numéro Mobile Money")
+            fcfa = st.number_input("💰 Solde FCFA", min_value=0, step=1000, key="fcfa_admin")
+            stable = st.number_input("💱 Solde Stablecoin", min_value=0.0, step=10.0, key="stable_admin")
+            if st.form_submit_button("Créer"):
+                payload = {
+                    "username": new_username,
+                    "password": new_password,
+                    "phone_number": phone,
+                    "balance_fcfa": fcfa,
+                    "balance_stablecoin": stable
+                }
+                r = requests.post(f"{API_URL}/admin/add_user/", json=payload)
                 if r.status_code == 200:
-                    st.success("✅ Utilisateur supprimé.")
+                    st.success(f"✅ Utilisateur ajouté avec DID : {r.json().get('did')}")
                 else:
                     st.error(f"❌ {r.json().get('detail')}")
 
-        with st.expander("🛠 Modifier le solde d’un utilisateur"):
-            user_to_edit = st.text_input("Nom d'utilisateur à modifier")
-            new_fcfa = st.number_input("Nouveau solde FCFA", min_value=0, step=1000, key="fcfa_update")
-            new_stable = st.number_input("Nouveau solde Stablecoin", min_value=0.0, step=10.0, key="stable_update")
-            if st.button("Mettre à jour le solde"):
-                r = requests.post(f"{API_URL}/admin/update_balance/", json={
-                    "username": user_to_edit,
-                    "balance_fcfa": new_fcfa,
-                    "balance_stablecoin": new_stable
-                })
-                if r.status_code == 200:
-                    st.success("✅ Solde mis à jour.")
-                else:
-                    st.error(f"❌ {r.json().get('detail')}")
+    # 🗑 Suppression utilisateur
+    with st.expander("🗑 Supprimer un utilisateur"):
+        user_to_delete = st.text_input("Nom d'utilisateur à supprimer")
+        if st.button("Supprimer"):
+            r = requests.post(f"{API_URL}/admin/delete_user/", json={"username": user_to_delete})
+            if r.status_code == 200:
+                st.success("✅ Utilisateur supprimé.")
+            else:
+                st.error(f"❌ {r.json().get('detail')}")
 
-        with st.sidebar.expander("🔑 Accès Admin"):
-            admin_user = st.text_input("👤 Nom d'utilisateur Admin", key="admin_user")
-            admin_pass = st.text_input("🔒 Mot de passe Admin", type="password", key="admin_pass")
-            if st.button("Se connecter comme Admin"):
-                if admin_user == "admin" and admin_pass == "adminpass":
-                    st.session_state["admin_authenticated"] = True
-                    st.success("✅ Accès Admin accordé.")
-                else:
-                    st.error("❌ Identifiants Admin incorrects.")
-
+    # 🛠 Modifier le solde
+    with st.expander("🛠 Modifier le solde d’un utilisateur"):
+        user_to_edit = st.text_input("Nom d'utilisateur à modifier")
+        new_fcfa = st.number_input("Nouveau solde FCFA", min_value=0, step=1000, key="fcfa_update")
+        new_stable = st.number_input("Nouveau solde Stablecoin", min_value=0.0, step=10.0, key="stable_update")
+        if st.button("Mettre à jour le solde"):
+            r = requests.post(f"{API_URL}/admin/update_balance/", json={
+                "username": user_to_edit,
+                "balance_fcfa": new_fcfa,
+                "balance_stablecoin": new_stable
+            })
+            if r.status_code == 200:
+                st.success("✅ Solde mis à jour.")
+            else:
+                st.error(f"❌ {r.json().get('detail')}")
