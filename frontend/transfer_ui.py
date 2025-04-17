@@ -142,27 +142,40 @@ if st.session_state["access_token"]:
 
 
 
+    # --------------------- TRANSFERT P2P ------------------------------
     elif option == "Transfert P2P":
         st.subheader("🔄 Transfert P2P via DID")
+
         headers = {"Authorization": f"Bearer {st.session_state['access_token']}"}
-        response = requests.get(f"{API_URL}/list_did_users/", headers=headers)
+        r = requests.get(f"{API_URL}/list_did_users/", headers=headers)
 
-        if response.status_code == 200:
-            did_users = response.json()["users"]
-            selected_did = st.selectbox("📌 Sélectionnez un destinataire", did_users)
-            amount_transfer = st.number_input("💰 Montant à transférer (USDT)", min_value=1.0)
+        if r.status_code != 200:
+            st.error("❌ Impossible de récupérer les destinataires.")
+            st.stop()
 
-            if st.button("Transférer"):
-                response = requests.post(f"{API_URL}/transfer/", headers=headers, json={
-                    "receiver_did": selected_did,
-                    "amount": amount_transfer
-                })
-                if response.status_code == 200:
-                    st.success("✅ Transfert réussi !")
-                else:
-                    st.error(f"❌ Erreur : {response.json().get('detail', 'Échec du transfert')}")
-        else:
-            st.error("❌ Impossible de récupérer les utilisateurs DID.")
+        all_dids = r.json()["users"]
+        my_did   = st.session_state.get("did")
+
+        # ⚠️  retire le DID courant
+        dest_dids = [d for d in all_dids if d != my_did]
+
+        if not dest_dids:
+            st.info("Aucun autre utilisateur disponible pour un transfert.")
+            st.stop()
+
+        receiver_did = st.selectbox("📌 Sélectionnez un destinataire", dest_dids)
+        amount_usdt  = st.number_input("💰 Montant à transférer (USDT)", min_value=0.01, step=0.50)
+
+        if st.button("Transférer"):
+            payload = {"receiver_did": receiver_did, "amount": amount_usdt}
+            tx = requests.post(f"{API_URL}/transfer/", headers=headers, json=payload)
+
+            if tx.status_code == 200:
+                st.success("✅ Transfert réussi !")
+            else:
+                st.error(f"❌ Erreur : {tx.json().get('detail', 'Échec du transfert')}")
+    # ------------------------------------------------------------------
+
 
     elif option == "Historique des Transactions":
         st.subheader("📋 Historique des Transactions")
