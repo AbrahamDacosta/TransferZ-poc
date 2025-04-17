@@ -41,6 +41,19 @@ if st.button("S'inscrire"):
         st.error(f"❌ Erreur : {response.json().get('detail', 'Inscription impossible')}")
 
 # ------------------------------------------------------------------
+# 1)  FORMULAIRE DE CONNEXION
+# ───────────────────────────────────
+st.subheader("🔐 Connexion")
+username = st.text_input("Nom d'utilisateur")
+password = st.text_input("Mot de passe", type="password")
+
+if st.button("Se connecter"):
+    resp = requests.post(f"{API_URL}/login/", json={"username": username, "password": password})
+    if resp.status_code == 200:
+        st.session_state["access_token"] = resp.json()["access_token"]
+        st.success("✅ Connexion réussie !")
+    else:
+        st.error("❌ Identifiants incorrects")
 # Interface après connexion
 if st.session_state["access_token"]:
     st.sidebar.title("📌 Menu")
