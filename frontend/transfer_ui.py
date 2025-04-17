@@ -40,47 +40,47 @@ if st.button("S'inscrire"):
     else:
         st.error(f"❌ Erreur : {response.json().get('detail', 'Inscription impossible')}")
 
-# 📌 Formulaire de connexion utilisateur
-st.subheader("🔐 Connexion")
-username = st.text_input("Nom d'utilisateur (Connexion)")
-password = st.text_input("Mot de passe (Connexion)", type="password")
-if st.button("Se connecter"):
-    response = requests.post(f"{API_URL}/login/", json={"username": username, "password": password})
-    if response.status_code == 200:
-        data = response.json()
-        st.session_state["access_token"] = data["access_token"]
-        st.success("✅ Connexion réussie !")
-    else:
-        st.error("❌ Identifiants incorrects")
-
-# 📌 Interface après connexion
+# ------------------------------------------------------------------
+# Interface après connexion
 if st.session_state["access_token"]:
     st.sidebar.title("📌 Menu")
-    option = st.sidebar.radio("Navigation", [
-        "Mon DID", "Ajouter un Numéro Mobile Money", "Dépôt Mobile Money",
-        "Transfert P2P", "Historique des Transactions"
-    ])
+    option = st.sidebar.radio(
+        "Navigation",
+        [
+            "Mon DID",
+            "Ajouter un Numéro Mobile Money",
+            "Dépôt Mobile Money",
+            "Transfert P2P",
+            "Historique des Transactions",
+        ],
+    )
 
+    # ---------- PROFIL DID ----------------------------------------
     if option == "Mon DID":
         st.subheader("📌 Identité Décentralisée (DID)")
-        if st.session_state["did"]:
+        if st.session_state.get("did"):
             st.write(f"🎯 **Votre DID** : `{st.session_state['did']}`")
         else:
             st.error("❌ Impossible de récupérer votre DID.")
 
+    # ---------- AJOUT NUMÉRO --------------------------------------
     elif option == "Ajouter un Numéro Mobile Money":
         st.subheader("📲 Ajout d’un Numéro Mobile Money")
         phone_number = st.text_input("Numéro Mobile Money")
 
         if st.button("Ajouter"):
             headers = {"Authorization": f"Bearer {st.session_state['access_token']}"}
-            response = requests.post(f"{API_URL}/user/add_phone/", headers=headers, json={"phone_number": phone_number})
-            if response.status_code == 200:
+            resp = requests.post(
+                f"{API_URL}/user/add_phone/",
+                headers=headers,
+                json={"phone_number": phone_number},
+            )
+            if resp.status_code == 200:
                 st.success("✅ Numéro ajouté avec succès !")
             else:
-                st.error(f"❌ Erreur : {response.json().get("detail", "Échec de l'ajout")}")
+                st.error(f"❌ Erreur : {resp.json().get('detail', 'Échec de l\'ajout')}")
 
-    # ------------- DÉPÔT MOBILE MONEY (UI + logique) ------------------
+    # ---------- DÉPÔT MOBILE MONEY --------------------------------
     elif option == "Dépôt Mobile Money":
         st.subheader("📲 Dépôt d'argent")
 
@@ -89,48 +89,43 @@ if st.session_state["access_token"]:
             "MTN":   "https://htxt.co.za/wp-content/uploads/2022/04/mtn-logo-2022-black-header-1536x864.jpg",
             "Orange":"https://www.annuaireci.com/Content/UserFiles/Ivory%20Coast/Upload/LOGO%20ORANGE.png",
             "Moov":  "https://is1-ssl.mzstatic.com/image/thumb/Purple221/v4/34/85/5e/34855e62-f17e-d858-775f-8c269406e610/AppIcon-0-0-1x_U007emarketing-0-8-0-0-85-220.png/1200x600wa.png",
-            "Wave":  "https://play-lh.googleusercontent.com/-Mp3XW7uhwn3KGQxUKGPoc4MbA5ti-3-q23TgoVi9ujBgHWW5n4IySvlG5Exwrxsjw=w240-h480-rw"
+            "Wave":  "https://play-lh.googleusercontent.com/-Mp3XW7uhwn3KGQxUKGPoc4MbA5ti-3-q23TgoVi9ujBgHWW5n4IySvlG5Exwrxsjw=w240-h480-rw",
         }
+        op = st.radio("Choisissez votre opérateur :", list(operator_icons.keys()))
+        st.image(operator_icons[op], width=100)
 
-        selected_operator = st.radio(
-            "Choisissez votre opérateur :",
-            list(operator_icons.keys()),
-            format_func=lambda op: f"{op}"
-        )
-        st.image(operator_icons[selected_operator], width=100)
-
-        # 2️⃣  Charger dynamiquement les numéros enregistrés
+        # 2️⃣  Liste dynamique des numéros enregistrés
         @st.cache_data(ttl=60)
         def get_registered_numbers(token):
-            headers = {"Authorization": f"Bearer {token}"}
-            resp = requests.get(f"{API_URL}/user/phones/", headers=headers)
-            return resp.json() if resp.status_code == 200 else []
+            h = {"Authorization": f"Bearer {token}"}
+            r = requests.get(f"{API_URL}/user/phones/", headers=h)
+            return r.json() if r.status_code == 200 else []
 
-        registered_numbers = get_registered_numbers(st.session_state["access_token"])
-
-        if not registered_numbers:
-            st.warning("⚠️ Aucun numéro Mobile Money enregistré. Ajoutez‑en un dans le menu Profil.")
+        numbers = get_registered_numbers(st.session_state["access_token"])
+        if not numbers:
+            st.warning("⚠️ Aucun numéro enregistré. Ajoutez‑en un d’abord.")
             st.stop()
 
-        selected_phone = st.selectbox("📱 Numéro Mobile Money", registered_numbers)
+        phone_sel = st.selectbox("📱 Numéro Mobile Money", numbers)
 
-        # 3️⃣  Montant unique (un seul input)
-        # amount_fcfa = st.number_input("💰 Montant à déposer (FCFA)", min_value=1.0, step=100.0)
+        # 3️⃣  Montant
+        amount_fcfa = st.number_input("💰 Montant à déposer (FCFA)", min_value=1.0, step=100.0)
 
         # 4️⃣  Bouton Dépôt
         if st.button("Déposer"):
             headers = {"Authorization": f"Bearer {st.session_state['access_token']}"}
-            payload = {"phone_number": selected_phone, "amount": amount_fcfa}
+            payload = {"phone_number": phone_sel, "amount": amount_fcfa}
 
-            st.write(f"📡 Requête envoyée : {payload}")   # debug
+            st.write(f"📡 Requête envoyée : {payload}")  # debug
 
             resp = requests.post(f"{API_URL}/deposit/", headers=headers, json=payload)
-
             if resp.status_code == 200:
                 st.success(f"✅ Dépôt réussi de {amount_fcfa:.0f} FCFA sur TransferZ !")
             else:
                 st.error(f"❌ Erreur : {resp.json().get('detail', 'Échec du dépôt')}")
+
 # ------------------------------------------------------------------
+
 
 
 
