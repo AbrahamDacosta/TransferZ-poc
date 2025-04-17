@@ -1,50 +1,85 @@
 {
     "users": {
-        "2250700000000": {
-            "phone": "2250700000000",
-            "balance_fcfa": 50000,
-            "balance_stablecoin": 80.0
-        },
-        "2250800000000": {
-            "phone": "2250800000000",
-            "balance_fcfa": 30000,
-            "balance_stablecoin": 50.0
-        },
-        "2250787785170": {
-            "phone": 2250787785170,
-            "balance_fcfa": 0,
-            "balance_stablecoin": 20.1
-        },
-        "2250797103267": {
-            "phone": 2250797103267,
-            "balance_fcfa": 0,
-            "balance_stablecoin": 19.99
-        }
+      "2250700000000": {
+        "password": "hashed_pw_070",
+        "did": "did:transferz:70a1d2",
+        "private_key": "privkey_070",
+        "blockchain_address": "0x070abc",
+        "phone_numbers": ["2250700000000"],
+        "balance_fcfa": 50000,
+        "balance_stablecoin": 80.0
+      },
+      "2250800000000": {
+        "password": "hashed_pw_080",
+        "did": "did:transferz:80b2d3",
+        "private_key": "privkey_080",
+        "blockchain_address": "0x080abc",
+        "phone_numbers": ["2250800000000"],
+        "balance_fcfa": 30000,
+        "balance_stablecoin": 50.0
+      },
+      "2250787785170": {
+        "password": "hashed_pw_5170",
+        "did": "did:transferz:5170d4",
+        "private_key": "privkey_5170",
+        "blockchain_address": "0x5170abc",
+        "phone_numbers": ["2250787785170"],
+        "balance_fcfa": 0,
+        "balance_stablecoin": 20.1
+      },
+      "2250797103267": {
+        "password": "hashed_pw_3267",
+        "did": "did:transferz:3267e5",
+        "private_key": "privkey_3267",
+        "blockchain_address": "0x3267abc",
+        "phone_numbers": ["2250797103267"],
+        "balance_fcfa": 0,
+        "balance_stablecoin": 19.99
+      },
+      "testuser": {
+        "password": "hashed_pw_test",
+        "did": "did:transferz:test123",
+        "private_key": "privkey_test",
+        "blockchain_address": "0xtestabc",
+        "phone_numbers": ["2250999000000"],
+        "balance_fcfa": 10000,
+        "balance_stablecoin": 100
+      },
+      "alice": {
+        "password": "hashed_pw_alice",
+        "did": "did:transferz:alice456",
+        "private_key": "privkey_alice",
+        "blockchain_address": "0xaliceabc",
+        "phone_numbers": ["2250888000000"],
+        "balance_fcfa": 5000,
+        "balance_stablecoin": 50
+      }
     },
     "transactions": [
-        {
-            "sender": "2250700000000",
-            "receiver": "2250800000000",
-            "amount": 20.0,
-            "status": "pending"
-        },
-        {
-            "sender": "2250800000000",
-            "receiver": "2250700000000",
-            "amount": 10.0,
-            "status": "completed"
-        },
-        {
-            "sender": "2250787785170",
-            "receiver": "2250700000000",
-            "amount": 0.5000000000000002,
-            "status": "completed"
-        },
-        {
-            "sender": "2250797103267",
-            "receiver": "2250787785170",
-            "amount": 20.01,
-            "status": "completed"
-        }
+      {
+        "sender": "2250700000000",
+        "receiver": "2250800000000",
+        "amount": 20.0,
+        "status": "pending"
+      },
+      {
+        "sender": "2250800000000",
+        "receiver": "2250700000000",
+        "amount": 10.0,
+        "status": "completed"
+      },
+      {
+        "sender": "2250787785170",
+        "receiver": "2250700000000",
+        "amount": 0.5,
+        "status": "completed"
+      },
+      {
+        "sender": "2250797103267",
+        "receiver": "2250787785170",
+        "amount": 20.01,
+        "status": "completed"
+      }
     ]
-}
+  }
+  
