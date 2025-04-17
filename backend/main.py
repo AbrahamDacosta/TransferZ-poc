@@ -10,6 +10,7 @@ from fastapi.security import OAuth2PasswordBearer
 from pydantic import BaseModel
 from passlib.context import CryptContext
 import jwt
+from fastapi import Body
 
 app = FastAPI()
 
@@ -161,6 +162,69 @@ def login(user: UserLogin):
 
     access_token = create_access_token(data={"sub": user.username})
     return {"access_token": access_token}
+
+# 🧾 Schéma d'entrée pour ajouter un utilisateur
+class AdminUser(BaseModel):
+    username: str
+    password: str
+    phone_number: str
+    balance_fcfa: int = 0
+    balance_stablecoin: float = 0.0
+
+# 🛠 Route d'ajout manuel (admin)
+@app.post("/admin/add_user/")
+def admin_add_user(user: AdminUser):
+    db = load_db()
+
+    if user.username in db["users"]:
+        raise HTTPException(status_code=400, detail="Utilisateur déjà existant.")
+
+    # Simuler les données blockchain/DID
+    uid = str(uuid4())
+    did = f"did:transferz:{uid}"
+    priv_key = f"privkey_{uid[:6]}"
+    address = f"0x{uid[:6]}"
+    hashed_pw = f"hashed_{user.password}"  # À remplacer si passlib est utilisé
+
+    db["users"][user.username] = {
+        "password": hashed_pw,
+        "did": did,
+        "private_key": priv_key,
+        "blockchain_address": address,
+        "phone_numbers": [user.phone_number],
+        "balance_fcfa": user.balance_fcfa,
+        "balance_stablecoin": user.balance_stablecoin
+    }
+
+    save_db(db)
+
+    return {"message": "✅ Utilisateur ajouté", "did": did}
+
+
+from fastapi import Body
+
+@app.post("/admin/delete_user/")
+def delete_user_admin(username: str = Body(...)):
+    db = load_db()
+    if username not in db["users"]:
+        raise HTTPException(status_code=404, detail="Utilisateur introuvable")
+    del db["users"][username]
+    save_db(db)
+    return {"message": "Utilisateur supprimé"}
+
+@app.post("/admin/update_balance/")
+def update_balance_admin(
+    username: str = Body(...),
+    balance_fcfa: int = Body(...),
+    balance_stablecoin: float = Body(...)
+):
+    db = load_db()
+    if username not in db["users"]:
+        raise HTTPException(status_code=404, detail="Utilisateur introuvable")
+    db["users"][username]["balance_fcfa"] = balance_fcfa
+    db["users"][username]["balance_stablecoin"] = balance_stablecoin
+    save_db(db)
+    return {"message": "Solde mis à jour"}
 
 @app.get("/user/phones/")
 def get_user_phones(user: str = Depends(get_current_user)):
